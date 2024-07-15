@@ -1,0 +1,5 @@
+This will get updated somewhere but here's a list of supplemental text used in this repo:
+
+Approximation Theory and Approximation Practice
+Cheny - Introduction to Approximation Theory
+

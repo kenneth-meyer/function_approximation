@@ -1,0 +1,15 @@
+Project:
+  name: single_layer_approx
+  # Where to save runs of models - make this more automatic
+  save_dir: ${FUN_APPROX_DATA_DIR}/examples/first_examples/single_layer_approx
+  # When to save the parameters and update plots
+  saveat: 1.0e+2
+
+Network:
+  # Which model to use, based on "model.py"
+  name: "Linear"
+  options:
+    batch_size: 1
+    in_size: 1
+    out_size: 10
+    activation: "relu"
