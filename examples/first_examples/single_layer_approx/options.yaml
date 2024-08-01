@@ -7,10 +7,11 @@ Project:
 
 Network:
   # Which model to use, based on "model.py"
-  name: "P_1_FE"
+  name: "SingleLayer"
   options:
-    batch_size: 1
-    in_size: 32
+    batch_size: 16
+    in_size: 1
     # f(x) is a scalar-valued function...
     out_size: 1
+    layer_width: 128
     activation: "relu"

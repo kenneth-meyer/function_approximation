@@ -13,7 +13,8 @@ import numpy as np
 from function_approximation.model import (
     Linear, 
     NonLinear, 
-    P_1_FE
+    P_1_FE,
+    SingleLayer
 )
 from function_approximation.helpers import parse_nn_yaml
 
@@ -28,6 +29,8 @@ if __name__ == "__main__":
     # Linear, Nonlinear, and 
     model_type = nn_params["name"]
     batch_size = nn_params["options"]["batch_size"]
+    layer_width = nn_params["options"]["layer_width"]
+    
     h = 2.0/float(batch_size)
 
     loss = jnp.load("/home/kenneth/research/learning/ML/function_approximation_data/" + model_type + "_loss.npy")
@@ -53,13 +56,16 @@ if __name__ == "__main__":
     # the yaml file
     in_size, out_size = 1, 1
 
-    # defines model
+    # defines model - need to do this without if statements, use a function
+    # or something!
     if model_type == "Linear":
         model = Linear(in_size, out_size, key=jax.random.PRNGKey(0))
     elif model_type == "Nonlinear":
         model = NonLinear(in_size, out_size, key=jax.random.PRNGKey(0))
     elif model_type == "P_1_FE":
         model = P_1_FE(in_size, out_size, jax.random.PRNGKey(0), h)
+    elif model_type == "SingleLayer":
+        model = SingleLayer(in_size, out_size, layer_width, jax.random.PRNGKey(0))  
     else:
         raise Exception("You're trying to use a model I haven't implemented yet")
 
