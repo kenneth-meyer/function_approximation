@@ -8,7 +8,7 @@ class Linear(eqx.Module):
     weight: jax.Array
     bias: jax.Array
 
-    def __init__(self, in_size, out_size, key):
+    def __init__(self, in_size, out_size, batch_size, key):
         wkey, bkey = jax.random.split(key)
         self.weight = jax.random.normal(wkey, (out_size, in_size))
         self.bias = jax.random.normal(bkey, (out_size,))
@@ -36,7 +36,7 @@ class NonLinear(eqx.Module):
     weight: jax.Array
     bias: jax.Array
 
-    def __init__(self, in_size, out_size, key):
+    def __init__(self, in_size, out_size, batch_size, key):
         wkey, bkey = jax.random.split(key)
         self.weight = jax.random.normal(wkey, (out_size, in_size))
         self.bias = jax.random.normal(bkey, (out_size,))
@@ -66,7 +66,7 @@ class P_1_FE(eqx.Module):
     bias: jax.Array
     h: float
 
-    def __init__(self, in_size, out_size, key, h_val):
+    def __init__(self, in_size, out_size, batch_size, key):
         wkey, bkey = jax.random.split(key)
         # need to update these depending on the domain we're approximating x on
         # and for the activation function we're using
@@ -75,7 +75,7 @@ class P_1_FE(eqx.Module):
 
         # h is a step size determined from the spacing of x, which is a
         # function of the batch size in this case
-        self.h = h_val
+        self.h = 2.0 / float(batch_size)
 
     def __call__(self,x):
         """ Determines action when the class is called
@@ -117,12 +117,22 @@ class SingleLayer(eqx.Module):
     #weight: jax.Array
     #bias: jax.Array
 
-    def __init__(self, in_size, out_size, layer_width, key):
+    #def __init__(self, in_size, out_size, layer_width, batch_size, key):
+    def __init__(self, key, **kwargs):
+    
         #wkey, bkey = jax.random.split(key)
         #self.weight = jax.random.normal(wkey, (out_size, in_size))
         #self.bias = jax.random.normal(bkey, (out_size,))
         #self.layer_width = layer_width
 
+        # layer_width could be a list of layer widths in the future,
+        # I will need to account for this...
+        # is using a pytree the best way of going about passing this info???
+        in_size = kwargs["in_size"]
+        out_size = kwargs["out_size"]
+        batch_size = kwargs["batch_size"]
+        layer_width = kwargs["layer_width"]
+        
         self.in_size = in_size
         self.out_size = out_size
 

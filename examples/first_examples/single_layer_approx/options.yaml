@@ -1,7 +1,10 @@
 Project:
   name: single_layer_approx
   # Where to save runs of models - make this more automatic
-  save_dir: ${FUN_APPROX_DATA_DIR}/examples/first_examples/single_layer_approx
+  #save_dir: ${FUN_APPROX_DATA_DIR}/examples/
+  # using environment variables and yaml files is a nightmare; look into a better way of
+  # doing this...
+  save_dir: /home/kenneth/research/learning/ML/function_approximation_data/examples/
   # When to save the parameters and update plots
   saveat: 1.0e+2
 
