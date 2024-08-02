@@ -26,3 +26,18 @@ def parse_nn_yaml(input_file):
             print(exc)
 
     return input_dict
+
+# this would involve making a new dictionary from an existing dictionary, this is
+# not needed lol
+def parse_nn_params(input_dict):
+    """ Reads params from yaml file for NN
+
+    Intended to be used with :func:`~helpers.parse_nn_yaml` to allow params to be passed to
+    NN classes
+
+    Parameters
+    ----------
+    input_dict : dict
+        _description_
+    """
+    pass

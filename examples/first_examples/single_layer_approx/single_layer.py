@@ -7,6 +7,7 @@ from jaxtyping import Array, Float, Int, PyTree  # https://github.com/google/jax
 # functions in this repo
 from function_approximation.model import Linear, NonLinear, P_1_FE, SingleLayer
 from function_approximation.helpers import parse_nn_yaml
+import function_approximation.model as models
 
 if __name__ == "__main__":
 
@@ -16,21 +17,18 @@ if __name__ == "__main__":
 
     # the yaml file is in the current directory, for now
     data_dict = parse_nn_yaml("examples/first_examples/single_layer_approx/options.yaml")
-    nn_params = data_dict["Network"]
+    nn_params = data_dict["Network"]["options"]
+    results_dir = data_dict["Project"]["save_dir"]
 
-    # Linear, Nonlinear, and P_1_FE 
-    model_type = nn_params["name"]
+    # is used to generate the model, so is inherently flexible 
+    model_type = data_dict["Network"]["name"]
 
-    batch_size = nn_params["options"]["batch_size"]
-    in_size = nn_params["options"]["in_size"]
-    out_size = nn_params["options"]["out_size"]
-    layer_width = nn_params["options"]["layer_width"]
+    # might need to access these in this main script
+    batch_size = nn_params["batch_size"]
+    in_size = nn_params["in_size"]
+    out_size = nn_params["out_size"]
+    layer_width = nn_params["layer_width"]
     
-
-    # we're working in x \in [0,1], so we can determine step size for FE mimicing
-    h = 2.0 / float(batch_size)
-    # I'll need to better check what FE we can/can't represent
-
     #@jax.jit
     #@jax.grad
     def loss_fn(model, x, y) -> Float[Array, ""]:
@@ -58,17 +56,26 @@ if __name__ == "__main__":
         pred_y = jax.vmap(model)(x)
         return pred_y
 
-    # defines model
-    if model_type == "Linear":
-        model = Linear(in_size, out_size, key=jax.random.PRNGKey(0))
-    elif model_type == "Nonlinear":
-        model = NonLinear(in_size, out_size, key=jax.random.PRNGKey(0))
-    elif model_type == "P_1_FE":
-        model = P_1_FE(in_size, out_size, jax.random.PRNGKey(0), h)
-    elif model_type == "SingleLayer":
-        model = SingleLayer(in_size, out_size, layer_width, jax.random.PRNGKey(0))  
-    else:
-        raise Exception("You're trying to use a model I haven't implemented yet")
+    # define model using getattr()
+    try:
+        # this might be slightly redundant
+        model_class = getattr(models, model_type)
+        model = model_class(jax.random.PRNGKey(0), **nn_params)
+    except:
+        raise Exception("The model you requested is not implemented,\
+                            check function_approxmiation.models for existing NN classes")
+
+    # # defines model
+    # if model_type == "Linear":
+    #     model = Linear(in_size, out_size, key=jax.random.PRNGKey(0))
+    # elif model_type == "Nonlinear":
+    #     model = NonLinear(in_size, out_size, key=jax.random.PRNGKey(0))
+    # elif model_type == "P_1_FE":
+    #     model = P_1_FE(in_size, out_size, jax.random.PRNGKey(0), h)
+    # elif model_type == "SingleLayer":
+    #     model = SingleLayer(in_size, out_size, layer_width, jax.random.PRNGKey(0))  
+    # else:
+    #     raise Exception("You're trying to use a model I haven't implemented yet")
 
     # define datapoints to test at
     #x = jnp.tile(jnp.linspace(0,1,batch_size), (in_size,1)).T
@@ -105,9 +112,8 @@ if __name__ == "__main__":
     
     # will want to vmap across first argument, should this happen inside the function?
 
-    # perform gradient descent once (does this do one iteration? idk what this is )
+    # define learning rate; should allow this to be specified/change
     LEARNING_RATE = 0.001
-    new_model = model 
         
     num_epochs = 10000
     loss_data = jnp.zeros(num_epochs)
@@ -150,13 +156,8 @@ if __name__ == "__main__":
         # save the loss function at each step - doesn't need to be jax array..
         loss_data = loss_data.at[epoch].set(train_loss) # optimal?
 
-        # update params/the model - can we edit without calling tree_util?
-        # how was this working at all?? model is not a scalar lol
-        #new_model = jax.tree_util.tree_map(lambda m, g: m - LEARNING_RATE * g, model, grads)
-
-
-    # save the parameters to a file so I can do postprocessing separately
-    results_dir = "/home/kenneth/research/learning/ML/function_approximation_data/" # hardcoded for now, want to make sure equinox works well
+    # save params to a file for postprocessing  
+    # will need to update this to better/more strategically save results
     eqx.tree_serialise_leaves(results_dir + "/" + model_type + "_model.eqx", model)
 
     # save things to a file
